@@ -1274,6 +1274,10 @@ static void handleEvent(SDL_Event & ev)
 		full->Bool() = !full->Bool();
 		return;
 	}
+    else if(ev.type == SDL_KEYDOWN && ev.key.keysym.sym==SDLK_9){
+        SDL_SaveBMP(screen, "Screen_c.bmp");
+        std::cin.get();
+    }
 	else if(ev.type == SDL_USEREVENT)
 	{
 		switch(ev.user.code)
