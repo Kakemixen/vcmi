@@ -524,6 +524,11 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
+int start_game(int argc, char* argv[])
+{
+    main(argc,argv);
+}
+
 void printInfoAboutIntObject(const CIntObject *obj, int level)
 {
 	std::stringstream sbuffer;
