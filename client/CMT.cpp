@@ -159,374 +159,363 @@ static void SDLLogCallback(void*           userdata,
 	logGlobal->debug("SDL(category %d; priority %d) %s", category, priority, message);
 }
 
-#if defined(VCMI_WINDOWS) && !defined(__GNUC__) && defined(VCMI_WITH_DEBUG_CONSOLE)
-int wmain(int argc, wchar_t* argv[])
-#elif defined(VCMI_APPLE) || defined(VCMI_ANDROID)
-int SDL_main(int argc, char *argv[])
-#else
-int main(int argc, char * argv[])
-#endif
+int start_game(int argc, char* argv[])
 {
 #ifdef VCMI_ANDROID
-	// boost will crash without this
-	setenv("LANG", "C", 1);
+    // boost will crash without this
+    setenv("LANG", "C", 1);
 #endif
 
 #ifndef VCMI_ANDROID
-	// Correct working dir executable folder (not bundle folder) so we can use executable relative paths
-	boost::filesystem::current_path(boost::filesystem::system_complete(argv[0]).parent_path());
+    // Correct working dir executable folder (not bundle folder) so we can use executable relative paths
+    boost::filesystem::current_path(boost::filesystem::system_complete(argv[0]).parent_path());
 #endif
-	std::cout << "Starting... " << std::endl;
-	po::options_description opts("Allowed options");
-	opts.add_options()
-		("help,h", "display help and exit")
-		("version,v", "display version information and exit")
-		("disable-shm", "force disable shared memory usage")
-		("enable-shm-uuid", "use UUID for shared memory identifier")
-		("testmap", po::value<std::string>(), "")
-		("testsave", po::value<std::string>(), "")
-		("spectate,s", "enable spectator interface for AI-only games")
-		("spectate-ignore-hero", "wont follow heroes on adventure map")
-		("spectate-hero-speed", po::value<int>(), "hero movement speed on adventure map")
-		("spectate-battle-speed", po::value<int>(), "battle animation speed for spectator")
-		("spectate-skip-battle", "skip battles in spectator view")
-		("spectate-skip-battle-result", "skip battle result window")
-		("onlyAI", "allow to run without human player, all players will be default AI")
-		("headless", "runs without GUI, implies --onlyAI")
-		("ai", po::value<std::vector<std::string>>(), "AI to be used for the player, can be specified several times for the consecutive players")
-		("oneGoodAI", "puts one default AI and the rest will be EmptyAI")
-		("autoSkip", "automatically skip turns in GUI")
-		("disable-video", "disable video player")
-		("nointro,i", "skips intro movies")
-		("donotstartserver,d","do not attempt to start server and just connect to it instead server")
-		("serverport", po::value<si64>(), "override port specified in config file")
-		("saveprefix", po::value<std::string>(), "prefix for auto save files")
-		("savefrequency", po::value<si64>(), "limit auto save creation to each N days");
+    std::cout << "Starting... " << std::endl;
+    po::options_description opts("Allowed options");
+    opts.add_options()
+        ("help,h", "display help and exit")
+        ("version,v", "display version information and exit")
+        ("disable-shm", "force disable shared memory usage")
+        ("enable-shm-uuid", "use UUID for shared memory identifier")
+        ("testmap", po::value<std::string>(), "")
+        ("testsave", po::value<std::string>(), "")
+        ("spectate,s", "enable spectator interface for AI-only games")
+        ("spectate-ignore-hero", "wont follow heroes on adventure map")
+        ("spectate-hero-speed", po::value<int>(), "hero movement speed on adventure map")
+        ("spectate-battle-speed", po::value<int>(), "battle animation speed for spectator")
+        ("spectate-skip-battle", "skip battles in spectator view")
+        ("spectate-skip-battle-result", "skip battle result window")
+        ("onlyAI", "allow to run without human player, all players will be default AI")
+        ("headless", "runs without GUI, implies --onlyAI")
+        ("ai", po::value<std::vector<std::string>>(), "AI to be used for the player, can be specified several times for the consecutive players")
+        ("oneGoodAI", "puts one default AI and the rest will be EmptyAI")
+        ("autoSkip", "automatically skip turns in GUI")
+        ("disable-video", "disable video player")
+        ("nointro,i", "skips intro movies")
+        ("donotstartserver,d","do not attempt to start server and just connect to it instead server")
+        ("serverport", po::value<si64>(), "override port specified in config file")
+        ("saveprefix", po::value<std::string>(), "prefix for auto save files")
+        ("savefrequency", po::value<si64>(), "limit auto save creation to each N days");
 
-	if(argc > 1)
-	{
-		try
-		{
-			po::store(po::parse_command_line(argc, argv, opts, po_style::unix_style|po_style::case_insensitive), vm);
-		}
-		catch(std::exception &e)
-		{
-			std::cerr << "Failure during parsing command-line options:\n" << e.what() << std::endl;
-		}
-	}
+    if(argc > 1)
+    {
+        try
+        {
+            po::store(po::parse_command_line(argc, argv, opts, po_style::unix_style|po_style::case_insensitive), vm);
+        }
+        catch(std::exception &e)
+        {
+            std::cerr << "Failure during parsing command-line options:\n" << e.what() << std::endl;
+        }
+    }
 
-	po::notify(vm);
-	if(vm.count("help"))
-	{
-		prog_help(opts);
-		return 0;
-	}
-	if(vm.count("version"))
-	{
-		prog_version();
-		return 0;
-	}
+    po::notify(vm);
+    if(vm.count("help"))
+    {
+        prog_help(opts);
+        return 0;
+    }
+    if(vm.count("version"))
+    {
+        prog_version();
+        return 0;
+    }
 
-	// Init old logging system and new (temporary) logging system
-	CStopWatch total, pomtime;
-	std::cout.flags(std::ios::unitbuf);
-	console = new CConsoleHandler();
-	*console->cb = processCommand;
-	console->start();
+    // Init old logging system and new (temporary) logging system
+    CStopWatch total, pomtime;
+    std::cout.flags(std::ios::unitbuf);
+    console = new CConsoleHandler();
+    *console->cb = processCommand;
+    console->start();
 
-	const bfs::path logPath = VCMIDirs::get().userCachePath() / "VCMI_Client_log.txt";
-	logConfig = new CBasicLogConfigurator(logPath, console);
-	logConfig->configureDefault();
-	logGlobal->info(NAME);
-	logGlobal->info("Creating console and configuring logger: %d ms", pomtime.getDiff());
-	logGlobal->info("The log file will be saved to %s", logPath);
+    const bfs::path logPath = VCMIDirs::get().userCachePath() / "VCMI_Client_log.txt";
+    logConfig = new CBasicLogConfigurator(logPath, console);
+    logConfig->configureDefault();
+    logGlobal->info(NAME);
+    logGlobal->info("Creating console and configuring logger: %d ms", pomtime.getDiff());
+    logGlobal->info("The log file will be saved to %s", logPath);
 
-	// Init filesystem and settings
-	preinitDLL(::console);
-	settings.init();
-	Settings session = settings.write["session"];
-	auto setSettingBool = [](std::string key, std::string arg) {
-		Settings s = settings.write(vstd::split(key, "/"));
-		if(::vm.count(arg))
-			s->Bool() = true;
-		else if(s->isNull())
-			s->Bool() = false;
-	};
-	auto setSettingInteger = [](std::string key, std::string arg, si64 defaultValue) {
-		Settings s = settings.write(vstd::split(key, "/"));
-		if(::vm.count(arg))
-			s->Integer() = ::vm[arg].as<si64>();
-		else if(s->isNull())
-			s->Integer() = defaultValue;
-	};
-	auto setSettingString = [](std::string key, std::string arg, std::string defaultValue) {
-		Settings s = settings.write(vstd::split(key, "/"));
-		if(::vm.count(arg))
-			s->String() = ::vm[arg].as<std::string>();
-		else if(s->isNull())
-			s->String() = defaultValue;
-	};
+    // Init filesystem and settings
+    preinitDLL(::console);
+    settings.init();
+    Settings session = settings.write["session"];
+    auto setSettingBool = [](std::string key, std::string arg) {
+        Settings s = settings.write(vstd::split(key, "/"));
+        if(::vm.count(arg))
+            s->Bool() = true;
+        else if(s->isNull())
+            s->Bool() = false;
+    };
+    auto setSettingInteger = [](std::string key, std::string arg, si64 defaultValue) {
+        Settings s = settings.write(vstd::split(key, "/"));
+        if(::vm.count(arg))
+            s->Integer() = ::vm[arg].as<si64>();
+        else if(s->isNull())
+            s->Integer() = defaultValue;
+    };
+    auto setSettingString = [](std::string key, std::string arg, std::string defaultValue) {
+        Settings s = settings.write(vstd::split(key, "/"));
+        if(::vm.count(arg))
+            s->String() = ::vm[arg].as<std::string>();
+        else if(s->isNull())
+            s->String() = defaultValue;
+    };
 
-	setSettingBool("session/onlyai", "onlyAI");
-	if(vm.count("headless"))
-	{
-		session["headless"].Bool() = true;
-		session["onlyai"].Bool() = true;
-	}
-	else if(vm.count("spectate"))
-	{
-		session["spectate"].Bool() = true;
-		session["spectate-ignore-hero"].Bool() = vm.count("spectate-ignore-hero");
-		session["spectate-skip-battle"].Bool() = vm.count("spectate-skip-battle");
-		session["spectate-skip-battle-result"].Bool() = vm.count("spectate-skip-battle-result");
-		if(vm.count("spectate-hero-speed"))
-			session["spectate-hero-speed"].Integer() = vm["spectate-hero-speed"].as<int>();
-		if(vm.count("spectate-battle-speed"))
-			session["spectate-battle-speed"].Float() = vm["spectate-battle-speed"].as<int>();
-	}
-	// Server settings
-	setSettingBool("session/donotstartserver", "donotstartserver");
+    setSettingBool("session/onlyai", "onlyAI");
+    if(vm.count("headless"))
+    {
+        session["headless"].Bool() = true;
+        session["onlyai"].Bool() = true;
+    }
+    else if(vm.count("spectate"))
+    {
+        session["spectate"].Bool() = true;
+        session["spectate-ignore-hero"].Bool() = vm.count("spectate-ignore-hero");
+        session["spectate-skip-battle"].Bool() = vm.count("spectate-skip-battle");
+        session["spectate-skip-battle-result"].Bool() = vm.count("spectate-skip-battle-result");
+        if(vm.count("spectate-hero-speed"))
+            session["spectate-hero-speed"].Integer() = vm["spectate-hero-speed"].as<int>();
+        if(vm.count("spectate-battle-speed"))
+            session["spectate-battle-speed"].Float() = vm["spectate-battle-speed"].as<int>();
+    }
+    // Server settings
+    setSettingBool("session/donotstartserver", "donotstartserver");
 
-	// Shared memory options
-	setSettingBool("session/disable-shm", "disable-shm");
-	setSettingBool("session/enable-shm-uuid", "enable-shm-uuid");
+    // Shared memory options
+    setSettingBool("session/disable-shm", "disable-shm");
+    setSettingBool("session/enable-shm-uuid", "enable-shm-uuid");
 
-	// Init special testing settings
-	setSettingInteger("session/serverport", "serverport", 0);
-	setSettingString("session/saveprefix", "saveprefix", "");
-	setSettingInteger("general/saveFrequency", "savefrequency", 1);
+    // Init special testing settings
+    setSettingInteger("session/serverport", "serverport", 0);
+    setSettingString("session/saveprefix", "saveprefix", "");
+    setSettingInteger("general/saveFrequency", "savefrequency", 1);
 
-	// Initialize logging based on settings
-	logConfig->configure();
-	logGlobal->debug("settings = %s", settings.toJsonNode().toJson());
+    // Initialize logging based on settings
+    logConfig->configure();
+    logGlobal->debug("settings = %s", settings.toJsonNode().toJson());
 
-	// Some basic data validation to produce better error messages in cases of incorrect install
-	auto testFile = [](std::string filename, std::string message) -> bool
-	{
-		if (CResourceHandler::get()->existsResource(ResourceID(filename)))
-			return true;
+    // Some basic data validation to produce better error messages in cases of incorrect install
+    auto testFile = [](std::string filename, std::string message) -> bool
+    {
+        if (CResourceHandler::get()->existsResource(ResourceID(filename)))
+            return true;
 
-		logGlobal->error("Error: %s was not found!", message);
-		return false;
-	};
+        logGlobal->error("Error: %s was not found!", message);
+        return false;
+    };
 
-	if (!testFile("DATA/HELP.TXT", "Heroes III data") ||
-		!testFile("MODS/VCMI/MOD.JSON", "VCMI data"))
-	{
-		exit(1); // These are unrecoverable errors
-	}
+    if (!testFile("DATA/HELP.TXT", "Heroes III data") ||
+            !testFile("MODS/VCMI/MOD.JSON", "VCMI data"))
+    {
+        exit(1); // These are unrecoverable errors
+    }
 
-	// these two are optional + some installs have them on CD and not in data directory
-	testFile("VIDEO/GOOD1A.SMK", "campaign movies");
-	testFile("SOUNDS/G1A.WAV", "campaign music"); //technically not a music but voiced intro sounds
+    // these two are optional + some installs have them on CD and not in data directory
+    testFile("VIDEO/GOOD1A.SMK", "campaign movies");
+    testFile("SOUNDS/G1A.WAV", "campaign music"); //technically not a music but voiced intro sounds
 
-	conf.init();
-	logGlobal->info("Loading settings: %d ms", pomtime.getDiff());
+    conf.init();
+    logGlobal->info("Loading settings: %d ms", pomtime.getDiff());
 
-	srand ( (unsigned int)time(nullptr) );
+    srand ( (unsigned int)time(nullptr) );
 
 
-	const JsonNode& video = settings["video"];
-	const JsonNode& res = video["screenRes"];
+    const JsonNode& video = settings["video"];
+    const JsonNode& res = video["screenRes"];
 
-	//something is really wrong...
-	if (res["width"].Float() < 100 || res["height"].Float() < 100)
-	{
-		logGlobal->error("Fatal error: failed to load settings!");
-		logGlobal->error("Possible reasons:");
-		logGlobal->error("\tCorrupted local configuration file at %s/settings.json", VCMIDirs::get().userConfigPath());
-		logGlobal->error("\tMissing or corrupted global configuration file at %s/schemas/settings.json", VCMIDirs::get().userConfigPath());
-		logGlobal->error("VCMI will now exit...");
-		exit(EXIT_FAILURE);
-	}
+    //something is really wrong...
+    if (res["width"].Float() < 100 || res["height"].Float() < 100)
+    {
+        logGlobal->error("Fatal error: failed to load settings!");
+        logGlobal->error("Possible reasons:");
+        logGlobal->error("\tCorrupted local configuration file at %s/settings.json", VCMIDirs::get().userConfigPath());
+        logGlobal->error("\tMissing or corrupted global configuration file at %s/schemas/settings.json", VCMIDirs::get().userConfigPath());
+        logGlobal->error("VCMI will now exit...");
+        exit(EXIT_FAILURE);
+    }
 
-	if(!settings["session"]["headless"].Bool())
-	{
-		if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_NOPARACHUTE))
-		{
-			logGlobal->error("Something was wrong: %s", SDL_GetError());
-			exit(-1);
-		}
+    if(!settings["session"]["headless"].Bool())
+    {
+        if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_NOPARACHUTE))
+        {
+            logGlobal->error("Something was wrong: %s", SDL_GetError());
+            exit(-1);
+        }
 
-		#ifdef VCMI_ANDROID
-		// manually setting egl pixel format, as a possible solution for sdl2<->android problem
-		// https://bugzilla.libsdl.org/show_bug.cgi?id=2291
-		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
-		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-		#endif // VCMI_ANDROID
+#ifdef VCMI_ANDROID
+        // manually setting egl pixel format, as a possible solution for sdl2<->android problem
+        // https://bugzilla.libsdl.org/show_bug.cgi?id=2291
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+#endif // VCMI_ANDROID
 
-		GH.mainFPSmng->init(); //(!)init here AFTER SDL_Init() while using SDL for FPS management
+        GH.mainFPSmng->init(); //(!)init here AFTER SDL_Init() while using SDL for FPS management
 
-		SDL_LogSetOutputFunction(&SDLLogCallback, nullptr);
+        SDL_LogSetOutputFunction(&SDLLogCallback, nullptr);
 
-		int driversCount = SDL_GetNumRenderDrivers();
-		std::string preferredDriverName = video["driver"].String();
+        int driversCount = SDL_GetNumRenderDrivers();
+        std::string preferredDriverName = video["driver"].String();
 
-		logGlobal->info("Found %d render drivers", driversCount);
+        logGlobal->info("Found %d render drivers", driversCount);
 
-		for(int it = 0; it < driversCount; it++)
-		{
-			SDL_RendererInfo info;
-			SDL_GetRenderDriverInfo(it,&info);
+        for(int it = 0; it < driversCount; it++)
+        {
+            SDL_RendererInfo info;
+            SDL_GetRenderDriverInfo(it,&info);
 
-			std::string driverName(info.name);
+            std::string driverName(info.name);
 
-			if(!preferredDriverName.empty() && driverName == preferredDriverName)
-			{
-				preferredDriverIndex = it;
-				logGlobal->info("\t%s (active)", driverName);
-			}
-			else
-				logGlobal->info("\t%s", driverName);
-		}
+            if(!preferredDriverName.empty() && driverName == preferredDriverName)
+            {
+                preferredDriverIndex = it;
+                logGlobal->info("\t%s (active)", driverName);
+            }
+            else
+                logGlobal->info("\t%s", driverName);
+        }
 
-		config::CConfigHandler::GuiOptionsMap::key_type resPair((int)res["width"].Float(), (int)res["height"].Float());
-		if (conf.guiOptions.count(resPair) == 0)
-		{
-			// selected resolution was not found - complain & fallback to something that we do have.
-			logGlobal->error("Selected resolution %dx%d was not found!", resPair.first, resPair.second);
-			if (conf.guiOptions.empty())
-			{
-				logGlobal->error("Unable to continue - no valid resolutions found! Please reinstall VCMI to fix this");
-				exit(1);
-			}
-			else
-			{
-				Settings newRes = settings.write["video"]["screenRes"];
-				newRes["width"].Float()  = conf.guiOptions.begin()->first.first;
-				newRes["height"].Float() = conf.guiOptions.begin()->first.second;
-				conf.SetResolution((int)newRes["width"].Float(), (int)newRes["height"].Float());
+        config::CConfigHandler::GuiOptionsMap::key_type resPair((int)res["width"].Float(), (int)res["height"].Float());
+        if (conf.guiOptions.count(resPair) == 0)
+        {
+            // selected resolution was not found - complain & fallback to something that we do have.
+            logGlobal->error("Selected resolution %dx%d was not found!", resPair.first, resPair.second);
+            if (conf.guiOptions.empty())
+            {
+                logGlobal->error("Unable to continue - no valid resolutions found! Please reinstall VCMI to fix this");
+                exit(1);
+            }
+            else
+            {
+                Settings newRes = settings.write["video"]["screenRes"];
+                newRes["width"].Float()  = conf.guiOptions.begin()->first.first;
+                newRes["height"].Float() = conf.guiOptions.begin()->first.second;
+                conf.SetResolution((int)newRes["width"].Float(), (int)newRes["height"].Float());
 
-				logGlobal->error("Falling back to %dx%d", newRes["width"].Integer(), newRes["height"].Integer());
-			}
-		}
+                logGlobal->error("Falling back to %dx%d", newRes["width"].Integer(), newRes["height"].Integer());
+            }
+        }
 
-		setScreenRes((int)res["width"].Float(), (int)res["height"].Float(), (int)video["bitsPerPixel"].Float(), video["fullscreen"].Bool(), (int)video["displayIndex"].Float());
-		logGlobal->info("\tInitializing screen: %d ms", pomtime.getDiff());
-	}
+        setScreenRes((int)res["width"].Float(), (int)res["height"].Float(), (int)video["bitsPerPixel"].Float(), video["fullscreen"].Bool(), (int)video["displayIndex"].Float());
+        logGlobal->info("\tInitializing screen: %d ms", pomtime.getDiff());
+    }
 
-	CCS = new CClientState();
-	CGI = new CGameInfo(); //contains all global informations about game (texts, lodHandlers, map handler etc.)
-	CSH = new CServerHandler();
-	// Initialize video
+    CCS = new CClientState();
+    CGI = new CGameInfo(); //contains all global informations about game (texts, lodHandlers, map handler etc.)
+    CSH = new CServerHandler();
+    // Initialize video
 #ifdef DISABLE_VIDEO
-	CCS->videoh = new CEmptyVideoPlayer();
+    CCS->videoh = new CEmptyVideoPlayer();
 #else
-	if (!settings["session"]["headless"].Bool() && !vm.count("disable-video"))
-		CCS->videoh = new CVideoPlayer();
-	else
-		CCS->videoh = new CEmptyVideoPlayer();
+    if (!settings["session"]["headless"].Bool() && !vm.count("disable-video"))
+        CCS->videoh = new CVideoPlayer();
+    else
+        CCS->videoh = new CEmptyVideoPlayer();
 #endif
 
-	logGlobal->info("\tInitializing video: %d ms", pomtime.getDiff());
+    logGlobal->info("\tInitializing video: %d ms", pomtime.getDiff());
 
-	if(!settings["session"]["headless"].Bool())
-	{
-		//initializing audio
-		CCS->soundh = new CSoundHandler();
-		CCS->soundh->init();
-		CCS->soundh->setVolume((ui32)settings["general"]["sound"].Float());
-		CCS->musich = new CMusicHandler();
-		CCS->musich->init();
-		CCS->musich->setVolume((ui32)settings["general"]["music"].Float());
-		logGlobal->info("Initializing screen and sound handling: %d ms", pomtime.getDiff());
-	}
+    if(!settings["session"]["headless"].Bool())
+    {
+        //initializing audio
+        CCS->soundh = new CSoundHandler();
+        CCS->soundh->init();
+        CCS->soundh->setVolume((ui32)settings["general"]["sound"].Float());
+        CCS->musich = new CMusicHandler();
+        CCS->musich->init();
+        CCS->musich->setVolume((ui32)settings["general"]["music"].Float());
+        logGlobal->info("Initializing screen and sound handling: %d ms", pomtime.getDiff());
+    }
 #ifdef __APPLE__
-	// Ctrl+click should be treated as a right click on Mac OS X
-	SDL_SetHint(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, "1");
+    // Ctrl+click should be treated as a right click on Mac OS X
+    SDL_SetHint(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, "1");
 #endif
 
 #ifndef VCMI_NO_THREADED_LOAD
-	//we can properly play intro only in the main thread, so we have to move loading to the separate thread
-	boost::thread loading(init);
+    //we can properly play intro only in the main thread, so we have to move loading to the separate thread
+    boost::thread loading(init);
 #else
-	init();
+    init();
 #endif
 
-	if(!settings["session"]["headless"].Bool())
-	{
-		if(!vm.count("battle") && !vm.count("nointro") && settings["video"]["showIntro"].Bool())
-			playIntro();
-		SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 255);
-		SDL_RenderClear(mainRenderer);
-		SDL_RenderPresent(mainRenderer);
-	}
+    if(!settings["session"]["headless"].Bool())
+    {
+        if(!vm.count("battle") && !vm.count("nointro") && settings["video"]["showIntro"].Bool())
+            playIntro();
+        SDL_SetRenderDrawColor(mainRenderer, 0, 0, 0, 255);
+        SDL_RenderClear(mainRenderer);
+        SDL_RenderPresent(mainRenderer);
+    }
 
 
 #ifndef VCMI_NO_THREADED_LOAD
-	#ifdef VCMI_ANDROID // android loads the data quite slowly so we display native progressbar to prevent having only black screen for few seconds
-	{
-		CAndroidVMHelper vmHelper;
-		vmHelper.callStaticVoidMethod(CAndroidVMHelper::NATIVE_METHODS_DEFAULT_CLASS, "showProgress");
-	#endif // ANDROID
-		loading.join();
-	#ifdef VCMI_ANDROID
-		vmHelper.callStaticVoidMethod(CAndroidVMHelper::NATIVE_METHODS_DEFAULT_CLASS, "hideProgress");
-	}
-	#endif // ANDROID
+#ifdef VCMI_ANDROID // android loads the data quite slowly so we display native progressbar to prevent having only black screen for few seconds
+    {
+        CAndroidVMHelper vmHelper;
+        vmHelper.callStaticVoidMethod(CAndroidVMHelper::NATIVE_METHODS_DEFAULT_CLASS, "showProgress");
+#endif // ANDROID
+        loading.join();
+#ifdef VCMI_ANDROID
+        vmHelper.callStaticVoidMethod(CAndroidVMHelper::NATIVE_METHODS_DEFAULT_CLASS, "hideProgress");
+    }
+#endif // ANDROID
 #endif // THREADED
 
-	if(!settings["session"]["headless"].Bool())
-	{
-		pomtime.getDiff();
-		CCS->curh = new CCursorHandler();
-		graphics = new Graphics(); // should be before curh->init()
+    if(!settings["session"]["headless"].Bool())
+    {
+        pomtime.getDiff();
+        CCS->curh = new CCursorHandler();
+        graphics = new Graphics(); // should be before curh->init()
 
-		CCS->curh->initCursor();
-		logGlobal->info("Screen handler: %d ms", pomtime.getDiff());
-		pomtime.getDiff();
+        CCS->curh->initCursor();
+        logGlobal->info("Screen handler: %d ms", pomtime.getDiff());
+        pomtime.getDiff();
 
-		graphics->load();//must be after Content loading but should be in main thread
-		logGlobal->info("Main graphics: %d ms", pomtime.getDiff());
+        graphics->load();//must be after Content loading but should be in main thread
+        logGlobal->info("Main graphics: %d ms", pomtime.getDiff());
 
-		CMessage::init();
-		logGlobal->info("Message handler: %d ms", pomtime.getDiff());
+        CMessage::init();
+        logGlobal->info("Message handler: %d ms", pomtime.getDiff());
 
-		CCS->curh->show();
-	}
+        CCS->curh->show();
+    }
 
 
-	logGlobal->info("Initialization of VCMI (together): %d ms", total.getDiff());
+    logGlobal->info("Initialization of VCMI (together): %d ms", total.getDiff());
 
-	session["autoSkip"].Bool()  = vm.count("autoSkip");
-	session["oneGoodAI"].Bool() = vm.count("oneGoodAI");
-	session["aiSolo"].Bool() = false;
+    session["autoSkip"].Bool()  = vm.count("autoSkip");
+    session["oneGoodAI"].Bool() = vm.count("oneGoodAI");
+    session["aiSolo"].Bool() = false;
 
-	if(vm.count("testmap"))
-	{
-		session["testmap"].String() = vm["testmap"].as<std::string>();
-		session["onlyai"].Bool() = true;
-		boost::thread(&CServerHandler::debugStartTest, CSH, session["testmap"].String(), false);
-	}
-	else if(vm.count("testsave"))
-	{
-		session["testsave"].String() = vm["testsave"].as<std::string>();
-		session["onlyai"].Bool() = true;
-		boost::thread(&CServerHandler::debugStartTest, CSH, session["testsave"].String(), true);
-	}
-	else
-	{
-		GH.curInt = CMainMenu::create().get();
-	}
+    if(vm.count("testmap"))
+    {
+        session["testmap"].String() = vm["testmap"].as<std::string>();
+        session["onlyai"].Bool() = true;
+        boost::thread(&CServerHandler::debugStartTest, CSH, session["testmap"].String(), false);
+    }
+    else if(vm.count("testsave"))
+    {
+        session["testsave"].String() = vm["testsave"].as<std::string>();
+        session["onlyai"].Bool() = true;
+        boost::thread(&CServerHandler::debugStartTest, CSH, session["testsave"].String(), true);
+    }
+    else
+    {
+        GH.curInt = CMainMenu::create().get();
+    }
 
-	if(!settings["session"]["headless"].Bool())
-	{
-		mainLoop();
-	}
-	else
-	{
-		while(true)
-			boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-	}
+    if(!settings["session"]["headless"].Bool())
+    {
+        mainLoop();
+    }
+    else
+    {
+        while(true)
+            boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+    }
 
-	return 0;
-}
-
-int start_game(int argc, char* argv[])
-{
-    main(argc,argv);
+    return 0;
 }
 
 void printInfoAboutIntObject(const CIntObject *obj, int level)

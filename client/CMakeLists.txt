@@ -1,4 +1,5 @@
 set(client_SRCS
+        clientmain.cpp
 		StdInc.cpp
 		../CCallback.cpp
 
