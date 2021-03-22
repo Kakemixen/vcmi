@@ -238,6 +238,7 @@ void CCursorHandler::render()
 	destRect.w = 40;
 	destRect.h = 40;
 
+    // SDL_SaveBMP(screen, "Screen_c.bmp");
 	SDL_RenderCopy(mainRenderer, cursorLayer, nullptr, &destRect);
 }
 

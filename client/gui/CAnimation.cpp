@@ -22,6 +22,8 @@
 #include "../lib/JsonNode.h"
 #include "../lib/CRandomGenerator.h"
 
+#include <iostream>
+
 class SDLImageLoader;
 
 typedef std::map <size_t, std::vector <JsonNode> > source_map;

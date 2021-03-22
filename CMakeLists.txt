@@ -309,6 +309,7 @@ if(ENABLE_TEST)
 	enable_testing()
 	add_subdirectory(test)
 endif()
+add_subdirectory(qtheroes3)
 
 #######################################
 #        Installation section         #

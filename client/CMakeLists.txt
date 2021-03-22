@@ -173,9 +173,11 @@ if(WIN32)
 	endif()
 endif()
 
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
 target_link_libraries(vcmiclient PRIVATE
 		vcmi ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_MIXER_LIBRARY} ${SDL2_TTF_LIBRARY}
-		${FFMPEG_LIBRARIES} ${FFMPEG_EXTRA_LINKING_OPTIONS}
+        ${FFMPEG_LIBRARIES} ${FFMPEG_EXTRA_LINKING_OPTIONS} Qt5::Widgets
 )
 
 target_include_directories(vcmi

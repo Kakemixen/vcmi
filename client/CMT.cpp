@@ -11,6 +11,7 @@
 //
 #include "StdInc.h"
 #include <SDL_mixer.h>
+#include <SDL.h>
 
 #include <boost/program_options.hpp>
 
@@ -71,6 +72,8 @@
 #endif
 #include "../lib/UnlockGuard.h"
 #include "CMT.h"
+
+#include <iostream>
 
 #if __MINGW32__
 #undef main
