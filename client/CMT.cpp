@@ -9,6 +9,7 @@
  */
 // CMT.cpp : Defines the entry point for the console application.
 //
+#include <functional>
 #include "StdInc.h"
 #include <SDL_mixer.h>
 #include <SDL.h>
@@ -109,7 +110,7 @@ static bool ermInteractiveMode = false; //structurize when time is right
 void processCommand(const std::string &message);
 static void setScreenRes(int w, int h, int bpp, bool fullscreen, int displayIndex, bool resetVideo=true);
 void playIntro();
-void mainLoop();
+// void mainLoop(std::function<void(SDL_Surface*)> callback);
 
 static CBasicLogConfigurator *logConfig;
 
@@ -1370,7 +1371,8 @@ static void handleEvent(SDL_Event & ev)
 }
 
 
-void mainLoop()
+// pass in callback
+void mainLoop(std::function<void(SDL_Surface*)> callback)
 {
 	SettingsListener resChanged = settings.listen["video"]["fullscreen"];
 	resChanged([](const JsonNode &newState){  CGuiHandler::pushSDLEvent(SDL_USEREVENT, EUserEvent::FULLSCREEN_TOGGLED); });
@@ -1390,6 +1392,9 @@ void mainLoop()
 		CSH->applyPacksOnLobbyScreen();
 		GH.renderFrame();
 
+        SDL_LockSurface(screen);
+        callback(screen);
+        SDL_UnlockSurface(screen);
 	}
 }
 
