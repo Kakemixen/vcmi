@@ -10,7 +10,7 @@
 void MainWindow::handleResults(SDL_Surface* screen){
     // qDebug() << "got frame";
     // bool success = image.loadFromData((const uchar*) screen->pixels, screen->h * screen->pitch);
-    bool success = image.load("/home/joakim/vcmi/build/bin/Screen_c.bmp");
+    bool success = image.load("/home/hljunggr/playtime/vcmi/build/bin/Screen_c.bmp");
     if(!success)
     {
         std::cout << "THIS DID NOT WORK OMG REPORTED\n";
