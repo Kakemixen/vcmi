@@ -1403,7 +1403,16 @@ void mainLoop(std::function<void(SDL_Surface*)> screen_callback,
             fake2.motion.y = fake.button.y;
             std::cout << fake2.motion.x << ", " << fake2.motion.y << "\n\n\n\n";
             handleEvent(fake2);
+
+            fake.motion.x = fake.button.x;
+            fake.motion.y = fake.button.y;
             handleEvent(fake);
+
+            SDL_Event fake3;
+            fake3.type = SDL_MOUSEBUTTONUP;
+            fake3.motion.x = fake.button.x;
+            fake3.motion.y = fake.button.y;
+            handleEvent(fake3);
             // fake.button.x = -1;
         }
 
