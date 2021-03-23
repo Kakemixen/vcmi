@@ -2,5 +2,6 @@
 
 int main(int argc, char* argv[])
 {
-    start_game(argc,argv);
+    init_game(argc,argv);
+    mainLoop();
 }

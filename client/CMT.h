@@ -22,4 +22,5 @@ extern SDL_Surface *screenBuf; // points to screen (if only advmapint is present
 void removeGUI();
 void handleQuit(bool ask = true);
 
-int start_game(int argc, char* argv[]);
+SDL_Surface* init_game(int argc, char* argv[]);
+void mainLoop();

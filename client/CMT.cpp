@@ -109,7 +109,7 @@ static bool ermInteractiveMode = false; //structurize when time is right
 void processCommand(const std::string &message);
 static void setScreenRes(int w, int h, int bpp, bool fullscreen, int displayIndex, bool resetVideo=true);
 void playIntro();
-static void mainLoop();
+void mainLoop();
 
 static CBasicLogConfigurator *logConfig;
 
@@ -159,7 +159,7 @@ static void SDLLogCallback(void*           userdata,
 	logGlobal->debug("SDL(category %d; priority %d) %s", category, priority, message);
 }
 
-int start_game(int argc, char* argv[])
+SDL_Surface* init_game(int argc, char* argv[])
 {
 #ifdef VCMI_ANDROID
     // boost will crash without this
@@ -505,17 +505,20 @@ int start_game(int argc, char* argv[])
         GH.curInt = CMainMenu::create().get();
     }
 
-    if(!settings["session"]["headless"].Bool())
-    {
-        mainLoop();
-    }
-    else
-    {
-        while(true)
-            boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-    }
 
-    return 0;
+    return screen;
+
+    // if(!settings["session"]["headless"].Bool())
+    // {
+    //     mainLoop();
+    // }
+    // else
+    // {
+    //     while(true)
+    //         boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+    // }
+    //
+    // return 0;
 }
 
 void printInfoAboutIntObject(const CIntObject *obj, int level)
@@ -1367,7 +1370,7 @@ static void handleEvent(SDL_Event & ev)
 }
 
 
-static void mainLoop()
+void mainLoop()
 {
 	SettingsListener resChanged = settings.listen["video"]["fullscreen"];
 	resChanged([](const JsonNode &newState){  CGuiHandler::pushSDLEvent(SDL_USEREVENT, EUserEvent::FULLSCREEN_TOGGLED); });

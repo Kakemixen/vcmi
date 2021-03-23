@@ -9,6 +9,11 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+set(BIN_DIR "." CACHE STRING "Where to install binaries")
+set(DATA_DIR "." CACHE STRING "Where to install data files")
+install(DIRECTORY config DESTINATION ${DATA_DIR})
+# install(TARGETS helloworld DESTINATION ${BIN_DIR})
+
 set(client_SRCS
 	../client/StdInc.cpp
 	../client/../CCallback.cpp
@@ -160,6 +165,7 @@ endif()
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 
+
 add_executable(helloworld
     mainwindow.ui
     mainwindow.cpp
@@ -167,9 +173,6 @@ add_executable(helloworld
     ${client_SRCS}
     ${client_HEADERS}
 )
-
-message(STATUS ${SDL2_LIBRARY})
-
 
 target_link_libraries(helloworld Qt5::Widgets vcmi ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_MIXER_LIBRARY} ${SDL2_TTF_LIBRARY} ${FFMPEG_LIBRARIES} ${FFMPEG_EXTRA_LINKING_OPTIONS})
 
@@ -183,5 +186,11 @@ target_include_directories(helloworld
     ../client
 )
 
+
+vcmi_set_output_dir(helloworld "")
+cotire(helloworld)
 include_directories(../client)
+
 link_directories(../client)
+
+install(TARGETS helloworld DESTINATION ${BIN_DIR})

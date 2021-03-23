@@ -5,7 +5,8 @@
 int main(int argc, char *argv[])
 {
     // return 0;
-    start_game(argc, argv);
+    init_game(argc, argv);
+    mainLoop();
     // removeGUI();
     // QApplication a(argc, argv);
     // MainWindow w;
