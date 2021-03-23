@@ -1,3 +1,4 @@
+#include <QMouseEvent>
 #include <QDebug>
 #include <QBitmap>
 #include <QPixmap>
@@ -6,8 +7,27 @@
 
 #include <iostream>
 
-void MainWindow::handleResults(const QString & res){
-    qDebug() << res;
+void MainWindow::handleResults(SDL_Surface* screen){
+    // qDebug() << "got frame";
+    // bool success = image.loadFromData((const uchar*) screen->pixels, screen->h * screen->pitch);
+    bool success = image.load("/home/joakim/vcmi/build/bin/Screen_c.bmp");
+    if(!success)
+    {
+        std::cout << "THIS DID NOT WORK OMG REPORTED\n";
+        exit(2);
+    }
+    ui->label->setPixmap(image);
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
+    MouseClickEvent event_ {
+        event->x(),
+        event->y(),
+    };
+
+    emit mouseClickEvent(event_);   
+
+    QMainWindow::mouseReleaseEvent(event);
 }
 
 MainWindow::MainWindow(QWidget *parent):
@@ -23,14 +43,14 @@ MainWindow::MainWindow(SDL_Surface* screen) :
 {
     ui->setupUi(this);
     // QPixmap image("~/vcmi/build/bin/Screen_c.bmp"); 
-    QPixmap image;
-    bool success = image.load("/home/joakim/vcmi/build/bin/Screen_c.bmp");
-    if(!success)
-    {
-        std::cout << "THIS DID NOT WORK OMG REPORTED\n";
-        exit(2);
-    }
-    ui->label->setPixmap(image);
+    // QPixmap image;
+//     bool success = image.load("/home/joakim/vcmi/build/bin/Screen_c.bmp");
+//     if(!success)
+//     {
+//         std::cout << "THIS DID NOT WORK OMG REPORTED\n";
+//         exit(2);
+//     }
+//     ui->label->setPixmap(image);
 }
 
 MainWindow::~MainWindow()

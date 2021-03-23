@@ -9,6 +9,7 @@
  */
 #pragma once
 #include <SDL_render.h>
+#include <SDL.h>
 #include <functional>
 
 extern SDL_Texture * screenTexture;
@@ -24,4 +25,4 @@ void removeGUI();
 void handleQuit(bool ask = true);
 
 SDL_Surface* init_game(int argc, char* argv[]);
-void mainLoop(std::function<void(SDL_Surface*)>);
+void mainLoop(std::function<void(SDL_Surface*)>,std::function<SDL_MouseButtonEvent()>);

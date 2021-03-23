@@ -1372,7 +1372,8 @@ static void handleEvent(SDL_Event & ev)
 
 
 // pass in callback
-void mainLoop(std::function<void(SDL_Surface*)> callback)
+void mainLoop(std::function<void(SDL_Surface*)> screen_callback,
+        std::function<SDL_MouseButtonEvent()> mouse_callback)
 {
 	SettingsListener resChanged = settings.listen["video"]["fullscreen"];
 	resChanged([](const JsonNode &newState){  CGuiHandler::pushSDLEvent(SDL_USEREVENT, EUserEvent::FULLSCREEN_TOGGLED); });
@@ -1389,11 +1390,28 @@ void mainLoop(std::function<void(SDL_Surface*)> callback)
 			handleEvent(ev);
 		}
 
+        /*
+         * create fake event
+         */
+        SDL_Event fake;
+        fake.button = mouse_callback();
+        if(fake.button.x != -1)
+        {
+            fake.motion.x = 100;
+            fake.motion.y = 100;
+            // std::cout << fake.button.x << " ";
+            // std::cout << fake.button.y << "\n\n\n\n";
+            handleEvent(fake);
+            // fake.button.x = -1;
+        }
+
 		CSH->applyPacksOnLobbyScreen();
 		GH.renderFrame();
 
         SDL_LockSurface(screen);
-        callback(screen);
+        SDL_SaveBMP(screen, "Screen_c.bmp");
+        screen_callback(screen);
+        // std::cin.get();
         SDL_UnlockSurface(screen);
 	}
 }
