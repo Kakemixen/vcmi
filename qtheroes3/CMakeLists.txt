@@ -162,7 +162,7 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
 
 
 
@@ -170,11 +170,12 @@ add_executable(helloworld
     mainwindow.ui
     mainwindow.cpp
     main.cpp
+    server.cpp
     ${client_SRCS}
     ${client_HEADERS}
 )
 
-target_link_libraries(helloworld Qt5::Widgets vcmi ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_MIXER_LIBRARY} ${SDL2_TTF_LIBRARY} ${FFMPEG_LIBRARIES} ${FFMPEG_EXTRA_LINKING_OPTIONS})
+target_link_libraries(helloworld Qt5::Widgets Qt5::Network vcmi ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_MIXER_LIBRARY} ${SDL2_TTF_LIBRARY} ${FFMPEG_LIBRARIES} ${FFMPEG_EXTRA_LINKING_OPTIONS})
 
 target_include_directories(helloworld
 	PUBLIC	${CMAKE_CURRENT_SOURCE_DIR}
