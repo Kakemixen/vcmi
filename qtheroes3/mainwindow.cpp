@@ -9,11 +9,11 @@
 
 void MainWindow::handleResults(const unsigned char* pixels, unsigned int size){
 
-    std::cout << ((long*)pixels)[0] << "!\n";
-    exit(42);
-    return;
-    bool success = image.loadFromData(pixels, size);
-    // bool success = image.load("/tmp/Screen_homm3.bmp");
+    //std::cout << ((long*)pixels)[0] << "!\n";
+    //exit(42);
+    //return;
+    //bool success = image.loadFromData(pixels, size);
+    bool success = image.load("/tmp/Screen_homm3.bmp");
     if(!success)
     {
         std::cout << "THIS DID NOT WORK OMG REPORTED\n";

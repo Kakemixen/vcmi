@@ -58,17 +58,15 @@ class ImageThread : public QThread
             /*
              * create fake event
              */
-            SDL_Event fake;
             if(!curr_mouse_event_.handled)
             {
+                SDL_Event fake;
                 fake.button.type = SDL_MOUSEBUTTONDOWN;
                 fake.button.button = SDL_BUTTON_LEFT;
                 fake.button.x = curr_mouse_event_.x;
                 fake.button.y = curr_mouse_event_.y;
                 curr_mouse_event_.handled = true;
-            }
-            if(fake.button.x != -1)
-            {
+
                 SDL_Event fake2;
                 fake2.type = SDL_MOUSEMOTION;
                 fake2.motion.x = fake.button.x;

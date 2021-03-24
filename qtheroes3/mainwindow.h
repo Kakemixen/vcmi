@@ -36,6 +36,7 @@ private:
 
 signals:
     void mouseClickEvent(MouseClickEvent event);
+    bool doneGettingData();
 };
 
 
