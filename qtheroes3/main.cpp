@@ -37,7 +37,6 @@ public:
     void handle_mouse(MouseClickEvent event){
         // qDebug() << event.x << " " << event.y;
         curr_mouse_event_ = event;
-        curr_mouse_event_.handled = false;
     }
 
 signals:

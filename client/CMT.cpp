@@ -1423,7 +1423,7 @@ void mainLoop(std::function<void(SDL_Surface*)> screen_callback,
 		GH.renderFrame();
 
         SDL_LockSurface(screen);
-        SDL_SaveBMP(screen, "Screen_c.bmp");
+        SDL_SaveBMP(screen, "/tmp/Screen_homm3.bmp");
         screen_callback(screen);
         // std::cin.get();
         SDL_UnlockSurface(screen);

@@ -31,6 +31,8 @@ public:
 private:
     Ui::MainWindow *ui;
     QPixmap image;
+    int labx, laby, labh, labw;
+
 
 signals:
     void mouseClickEvent(MouseClickEvent event);
