@@ -27,8 +27,8 @@ void MainWindow::handleResults(SDL_Surface* screen){
 void MainWindow::mouseReleaseEvent(QMouseEvent* event) {
     std::cout << labx << ", " << laby << ", " << labw << ", " << labh << "\n";
     MouseClickEvent event_ {
-        event->x() - 11,
-        event->y() - 11 - 22,
+        event->x() - labx,
+        event->y() - laby - 22,
         false,
     };
 
@@ -49,15 +49,8 @@ MainWindow::MainWindow(SDL_Surface* screen) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    // QPixmap image("~/vcmi/build/bin/Screen_c.bmp"); 
-    // QPixmap image;
-//     bool success = image.load("/home/joakim/vcmi/build/bin/Screen_c.bmp");
-//     if(!success)
-//     {
-//         std::cout << "THIS DID NOT WORK OMG REPORTED\n";
-//         exit(2);
-//     }
-//     ui->label->setPixmap(image);
+    delete ui->mainToolBar; // add this line
+    delete ui->menuBar; // add this line
 }
 
 MainWindow::~MainWindow()
