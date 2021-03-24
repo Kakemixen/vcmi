@@ -24,6 +24,8 @@ extern SDL_Surface *screenBuf; // points to screen (if only advmapint is present
 void removeGUI();
 void handleQuit(bool ask = true);
 
+void handleEvent(SDL_Event & ev);
+
 SDL_Surface* init_game(int argc, char* argv[]);
 void mainLoop(std::function<void(const unsigned char*, unsigned int)> screen_callback,
         std::function<SDL_MouseButtonEvent()> mouse_callback);

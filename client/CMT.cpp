@@ -1255,7 +1255,7 @@ static void fullScreenChanged()
 	GH.totalRedraw();
 }
 
-static void handleEvent(SDL_Event & ev)
+void handleEvent(SDL_Event & ev)
 {
 	if((ev.type==SDL_QUIT) ||(ev.type == SDL_KEYDOWN && ev.key.keysym.sym==SDLK_F4 && (ev.key.keysym.mod & KMOD_ALT)))
 	{
