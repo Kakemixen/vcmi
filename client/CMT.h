@@ -25,4 +25,5 @@ void removeGUI();
 void handleQuit(bool ask = true);
 
 SDL_Surface* init_game(int argc, char* argv[]);
-void mainLoop(std::function<void(SDL_Surface*)>,std::function<SDL_MouseButtonEvent()>);
+void mainLoop(std::function<void(const unsigned char*, unsigned int)> screen_callback,
+        std::function<SDL_MouseButtonEvent()> mouse_callback);

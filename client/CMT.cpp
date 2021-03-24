@@ -1372,7 +1372,7 @@ static void handleEvent(SDL_Event & ev)
 
 
 // pass in callback
-void mainLoop(std::function<void(SDL_Surface*)> screen_callback,
+void mainLoop(std::function<void(const unsigned char*, unsigned int)> screen_callback,
         std::function<SDL_MouseButtonEvent()> mouse_callback)
 {
 	SettingsListener resChanged = settings.listen["video"]["fullscreen"];
@@ -1380,6 +1380,10 @@ void mainLoop(std::function<void(SDL_Surface*)> screen_callback,
 
 	inGuiThread.reset(new bool(true));
 	GH.mainFPSmng->init();
+
+    unsigned int size = screen->w * screen->pitch;
+    unsigned char* qt_pixels = new unsigned char[size]; 
+    //std::cout << ((long*)qt_pixels[0]) << "!\n";
 
 	while(1) //main SDL events loop
 	{
@@ -1424,7 +1428,11 @@ void mainLoop(std::function<void(SDL_Surface*)> screen_callback,
 
         SDL_LockSurface(screen);
         SDL_SaveBMP(screen, "/tmp/Screen_homm3.bmp");
-        screen_callback(screen);
+        void* sdl_pixels = screen->pixels;
+        //std::cout << ((long*)sdl_pixels)[0] << "?\n";
+        memcpy(qt_pixels, sdl_pixels, size);
+        //std::cout << ((long*)qt_pixels)[0] << "!\n";
+        screen_callback(qt_pixels, size);
         // std::cin.get();
         SDL_UnlockSurface(screen);
 	}

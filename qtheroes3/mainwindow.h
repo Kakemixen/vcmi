@@ -25,7 +25,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     explicit MainWindow(SDL_Surface* screen);
     ~MainWindow();
-    void handleResults(SDL_Surface* screen);
+    void handleResults(const unsigned char* pixels, unsigned int size);
     void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:

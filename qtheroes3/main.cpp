@@ -8,8 +8,8 @@ class ImageThread : public QThread
 {
     Q_OBJECT
     void run() override {
-        mainLoop([this](SDL_Surface* screen){
-            emit resultReady(screen);
+        mainLoop([this](const unsigned char* pixels, unsigned int size){
+            emit resultReady(pixels, size);
         },
         [this](){
             SDL_MouseButtonEvent fake;
@@ -33,14 +33,13 @@ private:
     MouseClickEvent curr_mouse_event_;
 
 public:
-    void callback(SDL_Surface* screen);
     void handle_mouse(MouseClickEvent event){
         // qDebug() << event.x << " " << event.y;
         curr_mouse_event_ = event;
     }
 
 signals:
-    void resultReady(SDL_Surface *screen);
+    void resultReady(const unsigned char* pixels, unsigned int size);
 };
 
 
