@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-project(helloworld VERSION 1.0.0 LANGUAGES CXX)
+project(qt_homm3 VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,7 +12,7 @@ set(CMAKE_AUTOUIC ON)
 set(BIN_DIR "." CACHE STRING "Where to install binaries")
 set(DATA_DIR "." CACHE STRING "Where to install data files")
 install(DIRECTORY config DESTINATION ${DATA_DIR})
-# install(TARGETS helloworld DESTINATION ${BIN_DIR})
+# install(TARGETS qt_homm3 DESTINATION ${BIN_DIR})
 
 set(client_SRCS
 	../client/StdInc.cpp
@@ -166,7 +166,7 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 
 
-add_executable(helloworld
+add_executable(qt_homm3
     mainwindow.ui
     mainwindow.cpp
     main.cpp
@@ -174,9 +174,9 @@ add_executable(helloworld
     ${client_HEADERS}
 )
 
-target_link_libraries(helloworld Qt5::Widgets vcmi ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_MIXER_LIBRARY} ${SDL2_TTF_LIBRARY} ${FFMPEG_LIBRARIES} ${FFMPEG_EXTRA_LINKING_OPTIONS})
+target_link_libraries(qt_homm3 Qt5::Widgets vcmi ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2_MIXER_LIBRARY} ${SDL2_TTF_LIBRARY} ${FFMPEG_LIBRARIES} ${FFMPEG_EXTRA_LINKING_OPTIONS})
 
-target_include_directories(helloworld
+target_include_directories(qt_homm3
 	PUBLIC	${CMAKE_CURRENT_SOURCE_DIR}
 	PUBLIC	${SDL2_INCLUDE_DIR}
 	PRIVATE ${SDL2_TTF_INCLUDE_DIR}
@@ -187,10 +187,10 @@ target_include_directories(helloworld
 )
 
 
-vcmi_set_output_dir(helloworld "")
-cotire(helloworld)
+vcmi_set_output_dir(qt_homm3 "")
+cotire(qt_homm3)
 include_directories(../client)
 
 link_directories(../client)
 
-install(TARGETS helloworld DESTINATION ${BIN_DIR})
+install(TARGETS qt_homm3 DESTINATION ${BIN_DIR})

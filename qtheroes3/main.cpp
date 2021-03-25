@@ -14,33 +14,13 @@ extern CGuiHandler GH;
 extern CServerHandler* CSH;
 
 
-/* old run
-        mainLoop([this](const unsigned char* pixels, unsigned int size){
-            emit resultReady(pixels, size);
-        },
-        [this](){
-            SDL_MouseButtonEvent fake;
-
-            if(!curr_mouse_event_.handled)
-            {
-                fake.type = SDL_MOUSEBUTTONDOWN;
-                fake.button = SDL_BUTTON_LEFT;
-                fake.x = curr_mouse_event_.x;
-                fake.y = curr_mouse_event_.y;
-                curr_mouse_event_.handled = true;
-                return fake;
-            }
-            fake.x = -1;
-            return fake;
-        });
-*/
-
 class ImageThread : public QThread
 {
     Q_OBJECT
     void run() override {
 
         GH.mainFPSmng->init();
+        bufferSwapped = true;
 
         unsigned int size = screen->w * screen->pitch;
         unsigned char* qt_pixels = new unsigned char[size]; 
@@ -92,26 +72,28 @@ class ImageThread : public QThread
             CSH->applyPacksOnLobbyScreen();
             GH.renderFrame();
 
+            while(!bufferSwapped){} // avoid bus error
+
             SDL_LockSurface(screen);
-            SDL_SaveBMP(screen, "/tmp/Screen_homm3.bmp");
+            //SDL_SaveBMP(screen, "/tmp/Screen_homm3.bmp");
             void* sdl_pixels = screen->pixels;
-            //std::cout << ((long*)sdl_pixels)[0] << "?\n";
             memcpy(qt_pixels, sdl_pixels, size);
-            //std::cout << ((long*)qt_pixels)[0] << "!\n";
             emit resultReady(qt_pixels, size);
-            // std::cin.get();
             SDL_UnlockSurface(screen);
         }
     }
 
 private:
-    bool handled;
+    bool bufferSwapped;
     MouseClickEvent curr_mouse_event_;
 
 public:
     void handle_mouse(MouseClickEvent event){
         // qDebug() << event.x << " " << event.y;
         curr_mouse_event_ = event;
+    }
+    void handleFinishedBufferSwap(){
+        bufferSwapped = true;
     }
 
 signals:
