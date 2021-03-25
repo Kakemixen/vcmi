@@ -277,12 +277,10 @@ void CGuiHandler::handleCurrentEvent()
 	}
 	else if(current->type == SDL_MOUSEMOTION)
 	{
-    std::cout << "moure motion\n";
 		handleMouseMotion();
 	}
 	else if(current->type == SDL_MOUSEBUTTONDOWN)
 	{
-    std::cout << "moure button down\n";
 		switch(current->button.button)
 		{
 		case SDL_BUTTON_LEFT:
@@ -344,7 +342,6 @@ void CGuiHandler::handleCurrentEvent()
 	//todo: muiltitouch
 	else if(current->type == SDL_MOUSEBUTTONUP)
 	{
-    std::cout << "moure button up\n";
 		switch(current->button.button)
 		{
 		case SDL_BUTTON_LEFT:

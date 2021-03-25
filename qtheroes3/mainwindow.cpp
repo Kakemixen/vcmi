@@ -7,13 +7,14 @@
 
 #include <iostream>
 
-void MainWindow::handleResults(const unsigned char* pixels, unsigned int size){
+void MainWindow::handleResults(const unsigned char* pixels, int width, int height){
 
-    QImage tmp_img(pixels, 800, 600, QImage::Format_RGB32);
-    //bool success = image.loadFromData(pixels, size, QImage::Format_RGB32);
+    // While I guess I would like it if this worked, alas it does not
+    // bool success = image.loadFromData(pixels, size, QImage::Format_RGB32);
+
+    QImage tmp_img(pixels, width, height, QImage::Format_RGB32);
     bool success = image.convertFromImage(tmp_img);
     emit finishedBufferSwap();
-    //bool success = image.load("/tmp/Screen_homm3.bmp");
     if(!success)
     {
         std::cout << "THIS DID NOT WORK OMG REPORTED\n";
@@ -45,15 +46,6 @@ MainWindow::MainWindow(QWidget *parent):
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-}
-
-MainWindow::MainWindow(SDL_Surface* screen) :
-    QMainWindow(nullptr),
-    ui(new Ui::MainWindow)
-{
-    ui->setupUi(this);
-    delete ui->mainToolBar; // add this line
-    delete ui->menuBar; // add this line
 }
 
 MainWindow::~MainWindow()

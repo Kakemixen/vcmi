@@ -23,6 +23,8 @@ class ImageThread : public QThread
         bufferSwapped = true;
 
         unsigned int size = screen->w * screen->pitch;
+        int width = screen->w;
+        int height = screen->h;
         unsigned char* qt_pixels = new unsigned char[size]; 
         //std::cout << ((long*)qt_pixels[0]) << "!\n";
 
@@ -72,13 +74,15 @@ class ImageThread : public QThread
             CSH->applyPacksOnLobbyScreen();
             GH.renderFrame();
 
-            while(!bufferSwapped){} // avoid bus error
+            while(!bufferSwapped){
+                std::cout << "SDL waiting\n";
+            } // avoid writing while qt reads 
+            bufferSwapped = false;
 
             SDL_LockSurface(screen);
-            //SDL_SaveBMP(screen, "/tmp/Screen_homm3.bmp");
             void* sdl_pixels = screen->pixels;
             memcpy(qt_pixels, sdl_pixels, size);
-            emit resultReady(qt_pixels, size);
+            emit resultReady(qt_pixels, width, height);
             SDL_UnlockSurface(screen);
         }
     }
@@ -97,13 +101,13 @@ public:
     }
 
 signals:
-    void resultReady(const unsigned char* pixels, unsigned int size);
+    void resultReady(const unsigned char* pixels, int width, int height);
 };
 
 
 int main(int argc, char *argv[])
 {
-    auto screen = init_game(argc, argv);
+     screen = init_game(argc, argv);
     QApplication a(argc, argv);
     MainWindow w;
     // MainWindow w(screen);
@@ -111,6 +115,7 @@ int main(int argc, char *argv[])
     ImageThread* img_thread =  new ImageThread;
     QObject::connect(img_thread, &ImageThread::resultReady, &w, &MainWindow::handleResults);
     QObject::connect(&w, &MainWindow::mouseClickEvent, img_thread, &ImageThread::handle_mouse);
+    QObject::connect(&w, &MainWindow::finishedBufferSwap, img_thread, &ImageThread::handleFinishedBufferSwap);
     // connect(img_thread, &ImageThread::finished, img_thread, &QObject::deleteLater);
     img_thread->start();
 

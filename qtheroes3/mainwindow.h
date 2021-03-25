@@ -23,9 +23,8 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    explicit MainWindow(SDL_Surface* screen);
     ~MainWindow();
-    void handleResults(const unsigned char* pixels, unsigned int size);
+    void handleResults(const unsigned char* pixels, int width, int height);
     void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
