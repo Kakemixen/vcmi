@@ -1371,19 +1371,13 @@ void handleEvent(SDL_Event & ev)
 }
 
 
-// pass in callback
-void mainLoop(std::function<void(const unsigned char*, unsigned int)> screen_callback,
-        std::function<SDL_MouseButtonEvent()> mouse_callback)
+void mainLoop()
 {
 	SettingsListener resChanged = settings.listen["video"]["fullscreen"];
 	resChanged([](const JsonNode &newState){  CGuiHandler::pushSDLEvent(SDL_USEREVENT, EUserEvent::FULLSCREEN_TOGGLED); });
 
 	inGuiThread.reset(new bool(true));
 	GH.mainFPSmng->init();
-
-    unsigned int size = screen->w * screen->pitch;
-    unsigned char* qt_pixels = new unsigned char[size]; 
-    //std::cout << ((long*)qt_pixels[0]) << "!\n";
 
 	while(1) //main SDL events loop
 	{
@@ -1394,47 +1388,10 @@ void mainLoop(std::function<void(const unsigned char*, unsigned int)> screen_cal
 			handleEvent(ev);
 		}
 
-        /*
-         * create fake event
-         */
-        SDL_Event fake;
-        fake.button = mouse_callback();
-        if(fake.button.x != -1)
-        {
-            SDL_Event fake2;
-            fake2.type = SDL_MOUSEMOTION;
-            fake2.motion.x = fake.button.x;
-            fake2.motion.y = fake.button.y;
-            std::cout << fake2.motion.x << ", " << fake2.motion.y << "\n\n\n\n";
-            handleEvent(fake2);
-
-            fake.motion.x = fake.button.x;
-            fake.motion.y = fake.button.y;
-            std::cout << fake.type << "\n";
-            handleEvent(fake);
-
-            SDL_Event fake3;
-            fake3.button = fake.button;
-            fake3.motion.x = fake.button.x;
-            fake3.motion.y = fake.button.y;
-            fake3.type = SDL_MOUSEBUTTONUP;
-            std::cout << fake3.type << "\n";
-            handleEvent(fake3);
-            // fake.button.x = -1;
-        }
 
 		CSH->applyPacksOnLobbyScreen();
 		GH.renderFrame();
 
-        SDL_LockSurface(screen);
-        SDL_SaveBMP(screen, "/tmp/Screen_homm3.bmp");
-        void* sdl_pixels = screen->pixels;
-        //std::cout << ((long*)sdl_pixels)[0] << "?\n";
-        memcpy(qt_pixels, sdl_pixels, size);
-        //std::cout << ((long*)qt_pixels)[0] << "!\n";
-        screen_callback(qt_pixels, size);
-        // std::cin.get();
-        SDL_UnlockSurface(screen);
 	}
 }
 
