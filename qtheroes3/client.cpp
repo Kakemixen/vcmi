@@ -69,6 +69,7 @@ void Client::readFortune()
     currentFortune = nextFortune;
     setPixmap(currentFortune);
     // setText(currentFortune);
+    requestNewFortune();
 }
 
 void Client::displayError(QAbstractSocket::SocketError socketError)

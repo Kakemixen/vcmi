@@ -5,6 +5,7 @@
 #include <QThread>
 #include <QDebug>
 #include "CMT.h"
+#include "server.h"
 #include <SDL.h>
 #include <iostream>
 
@@ -124,7 +125,7 @@ int main(int argc, char *argv[])
     auto screen = init_game(argc, argv);
     QApplication a(argc, argv);
     MainWindow w;
-    // MainWindow w(screen);
+    Server s;
 
     ImageThread* img_thread =  new ImageThread;
     QObject::connect(img_thread, &ImageThread::resultReady, &w, &MainWindow::handleResults);
@@ -133,6 +134,7 @@ int main(int argc, char *argv[])
     img_thread->start();
 
     w.show();
+    s.show();
 
     return a.exec();
 }

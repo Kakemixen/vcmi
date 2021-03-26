@@ -7,19 +7,19 @@
 
 #include <iostream>
 
-void MainWindow::handleResults(const unsigned char* pixels, unsigned int size){
+void MainWindow::handleResults(const unsigned char* pixels, unsigned int size) {
 
     //std::cout << ((long*)pixels)[0] << "!\n";
     //exit(42);
     //return;
-    //bool success = image.loadFromData(pixels, size);
-    bool success = image.load("/tmp/Screen_homm3.bmp");
-    if(!success)
-    {
-        std::cout << "THIS DID NOT WORK OMG REPORTED\n";
-        exit(2);
-    }
-    ui->label->setPixmap(image);
+    // bool success = image.loadFromData(pixels, size);
+    // bool success = image.load("/tmp/Screen_homm3.bmp");
+    // if(!success)
+    // {
+    //     std::cout << "THIS DID NOT WORK OMG REPORTED\n";
+    //     exit(2);
+    // }
+    // ui->label->setPixmap(image);
     labx = ui->label->x();
     laby = ui->label->y();
     labw = ui->label->width();
